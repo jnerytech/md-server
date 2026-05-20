@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+SCRIPT="$(readlink -f "${BASH_SOURCE[0]}")"
+PACKAGE_DIR="$(cd "$(dirname "$SCRIPT")/.." && pwd)"
+exec "$PACKAGE_DIR/node_modules/.bin/tsx" "$PACKAGE_DIR/src/index.ts" "$@"
