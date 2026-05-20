@@ -9,10 +9,10 @@ import { renderIndexPage, renderFilePage } from './templates.js';
 interface ServerOptions {
   root?: string;
   file?: string;
-  port: number;
+  port?: number;
 }
 
-export function startServer({ root, file, port }: ServerOptions): void {
+export function startServer({ root, file, port = 0 }: ServerOptions): void {
   const app = express();
 
   if (file) {
@@ -67,7 +67,7 @@ export function startServer({ root, file, port }: ServerOptions): void {
 
   server.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EADDRINUSE') {
-      console.error(`\nError: Port ${port} is already in use. Use --port <n> to pick another.\n`);
+      console.error(`\nError: Port ${port} is already in use. Try again (a new port will be chosen) or use --port <n>.\n`);
     } else {
       console.error(`\nServer error: ${err.message}\n`);
     }
@@ -75,7 +75,9 @@ export function startServer({ root, file, port }: ServerOptions): void {
   });
 
   server.listen(port, () => {
-    const url = `http://localhost:${port}`;
+    const addr = server.address();
+    const actualPort = typeof addr === 'object' && addr ? addr.port : port;
+    const url = `http://localhost:${actualPort}`;
     const serving = file ?? root!;
     console.log(`\n  md-server running at ${url}`);
     console.log(`  Serving: ${path.resolve(serving)}\n`);

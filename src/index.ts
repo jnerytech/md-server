@@ -16,7 +16,7 @@ Arguments:
   folder        Path to the folder containing .md files (default: cwd)
 
 Options:
-  --port <n>    Port to listen on (default: 3000)
+  --port <n>    Port to listen on (default: random available port)
   --version     Print version number
   --help        Show this help message
 
@@ -39,9 +39,9 @@ if (args.includes('--help') || args.includes('-h')) {
 }
 
 const portFlagIndex = args.indexOf('--port');
-const port = portFlagIndex !== -1 ? parseInt(args[portFlagIndex + 1], 10) : 3000;
+const port = portFlagIndex !== -1 ? parseInt(args[portFlagIndex + 1], 10) : undefined;
 
-if (portFlagIndex !== -1 && (isNaN(port) || port < 1 || port > 65535)) {
+if (port !== undefined && (isNaN(port) || port < 1 || port > 65535)) {
   console.error('Error: --port requires a valid port number (1–65535)');
   process.exit(1);
 }
