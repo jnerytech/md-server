@@ -46,11 +46,12 @@ if (port !== undefined && (isNaN(port) || port < 1 || port > 65535)) {
   process.exit(1);
 }
 
-const folderArg = args.find((a, i) => {
+const pathParts = args.filter((a, i) => {
   if (a.startsWith('--')) return false;
   if (portFlagIndex !== -1 && i === portFlagIndex + 1) return false;
   return true;
 });
+const folderArg = pathParts.length > 0 ? pathParts.join(' ') : undefined;
 
 const target = folderArg ? path.resolve(process.cwd(), folderArg) : process.cwd();
 
