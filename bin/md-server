@@ -1,4 +1,15 @@
-#!/usr/bin/env bash
-SCRIPT="$(readlink -f "${BASH_SOURCE[0]}")"
-PACKAGE_DIR="$(cd "$(dirname "$SCRIPT")/.." && pwd)"
-exec "$PACKAGE_DIR/node_modules/.bin/tsx" "$PACKAGE_DIR/src/index.ts" "$@"
+#!/usr/bin/env node
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+
+const packageDir = join(dirname(fileURLToPath(import.meta.url)), '..');
+const tsx = join(packageDir, 'node_modules', '.bin', 'tsx');
+const indexTs = join(packageDir, 'src', 'index.ts');
+
+const result = spawnSync(tsx, [indexTs, ...process.argv.slice(2)], {
+  stdio: 'inherit',
+  shell: process.platform === 'win32',
+});
+
+process.exit(result.status ?? 0);
