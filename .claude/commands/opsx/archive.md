@@ -155,3 +155,9 @@ Target archive directory already exists.
 - Show clear summary of what happened
 - If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+
+## Language
+
+Always respond in Brazilian Portuguese (pt-BR).
+- **Keep in English:** technical terms (e.g. scanner, renderer, middleware), code identifiers, CLI flags, file/function names, section headers (Why, What Changes, Capabilities, etc.), and inline code
+- **Always in pt-BR:** all prose, explanations, reasoning, and descriptions

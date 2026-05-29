@@ -104,3 +104,9 @@ After completing all artifacts, summarize:
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
+
+## Language
+
+Always respond in Brazilian Portuguese (pt-BR).
+- **Keep in English:** technical terms (e.g. scanner, renderer, middleware), code identifiers, CLI flags, file/function names, section headers (Why, What Changes, Capabilities, etc.), and inline code
+- **Always in pt-BR:** all prose, explanations, reasoning, and descriptions

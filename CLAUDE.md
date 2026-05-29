@@ -10,6 +10,12 @@ Before asking anything in chat, use the `AskUserQuestion` tool.
 - ALWAYS use `AskUserQuestion` when you need input from the user
 - This applies to ALL situations: requirements, decisions, ambiguity, confirmations
 
+## Language
+
+Always respond in Brazilian Portuguese (pt-BR).
+- **Keep in English:** technical terms (e.g. scanner, renderer, middleware), code identifiers, CLI flags, file/function names, section headers (Why, What Changes, Capabilities, etc.), and inline code
+- **Always in pt-BR:** all prose, explanations, reasoning, and descriptions
+
 ## Commands
 
 ```bash

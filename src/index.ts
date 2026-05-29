@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { createRequire } from 'module';
 import { startServer } from './server.js';
+import { SUPPORTED_EXTENSIONS } from './scanner.js';
 
 const require = createRequire(import.meta.url);
 const { version } = require('../package.json') as { version: string };
@@ -18,6 +19,7 @@ Arguments:
 Options:
   --port <n>    Port to listen on (default: random available port)
   --speech      TTS-friendly rendering (for Speechify and similar readers)
+  --code        Also serve code files (default: .md only)
   --version     Print version number
   --help        Show this help message
 
@@ -41,6 +43,7 @@ if (args.includes('--help') || args.includes('-h')) {
 }
 
 const speech = args.includes('--speech');
+const code = args.includes('--code');
 const portFlagIndex = args.indexOf('--port');
 const port = portFlagIndex !== -1 ? parseInt(args[portFlagIndex + 1], 10) : undefined;
 
@@ -67,13 +70,14 @@ if (!fs.existsSync(target)) {
 const stat = fs.statSync(target);
 
 if (stat.isFile()) {
-  if (!target.toLowerCase().endsWith('.md')) {
-    console.error(`Error: File must be a .md file: ${target}`);
+  const ext = path.extname(target).toLowerCase();
+  if (!SUPPORTED_EXTENSIONS.has(ext)) {
+    console.error(`Error: Unsupported file type: ${target}`);
     process.exit(1);
   }
   startServer({ file: target, port, speech });
 } else if (stat.isDirectory()) {
-  startServer({ root: target, port, speech });
+  startServer({ root: target, port, speech, code });
 } else {
   console.error(`Error: Not a file or directory: ${target}`);
   process.exit(1);

@@ -86,3 +86,9 @@ All artifacts complete. All tasks complete.
 - Don't block archive on warnings - just inform and confirm
 - Use `openspec archive <name> --yes` — do NOT manually `mv` or sync specs
 - If the CLI command fails, report the error and stop
+
+## Language
+
+Always respond in Brazilian Portuguese (pt-BR).
+- **Keep in English:** technical terms (e.g. scanner, renderer, middleware), code identifiers, CLI flags, file/function names, section headers (Why, What Changes, Capabilities, etc.), and inline code
+- **Always in pt-BR:** all prose, explanations, reasoning, and descriptions

@@ -2,8 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import ignore from 'ignore';
 
-export const SUPPORTED_EXTENSIONS = new Set([
-  '.md',
+export const MD_EXTENSIONS = new Set(['.md']);
+
+export const CODE_EXTENSIONS = new Set([
   // TypeScript / JavaScript
   '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs',
   // Python
@@ -34,6 +35,8 @@ export const SUPPORTED_EXTENSIONS = new Set([
   '.sql',
 ]);
 
+export const SUPPORTED_EXTENSIONS = new Set([...MD_EXTENSIONS, ...CODE_EXTENSIONS]);
+
 function loadGitignore(root: string): ReturnType<typeof ignore> {
   const ig = ignore();
   const entries = fs.readdirSync(root, { recursive: true, encoding: 'utf-8' }) as string[];
@@ -61,13 +64,14 @@ function loadGitignore(root: string): ReturnType<typeof ignore> {
   return ig;
 }
 
-export function scanFiles(root: string): string[] {
+export function scanFiles(root: string, includeCode = false): string[] {
+  const allowed = includeCode ? SUPPORTED_EXTENSIONS : MD_EXTENSIONS;
   const ig = loadGitignore(root);
   const entries = fs.readdirSync(root, { recursive: true, encoding: 'utf-8' }) as string[];
   return entries
     .filter((e) => {
       const ext = path.extname(e).toLowerCase();
-      return SUPPORTED_EXTENSIONS.has(ext);
+      return allowed.has(ext);
     })
     .filter((e) => fs.statSync(path.join(root, e)).isFile())
     .map((e) => e.split(path.sep).join('/'))

@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import fs from 'fs';
-import { scanFiles, SUPPORTED_EXTENSIONS } from './scanner.js';
+import { scanFiles, SUPPORTED_EXTENSIONS, MD_EXTENSIONS } from './scanner.js';
 import { renderMarkdown, renderMarkdownSpeech, renderCodeFile, renderCodeFileSpeech } from './renderer.js';
 import { renderFilePage } from './templates.js';
 
@@ -11,6 +11,7 @@ interface ServerOptions {
   file?: string;
   port?: number;
   speech?: boolean;
+  code?: boolean;
 }
 
 const EXT_TO_LANG: Record<string, string> = {
@@ -68,7 +69,7 @@ function renderFile(
   return { html: render(content, lang) };
 }
 
-export function startServer({ root, file, port = 0, speech = false }: ServerOptions): void {
+export function startServer({ root, file, port = 0, speech = false, code = false }: ServerOptions): void {
   const app = express();
 
   if (file) {
@@ -85,7 +86,7 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
     const resolvedRoot = path.resolve(root!);
 
     app.get('/', (_req, res) => {
-      const files = scanFiles(resolvedRoot);
+      const files = scanFiles(resolvedRoot, code);
       if (files.length === 0) {
         res.status(404).send('No supported files found');
         return;
@@ -111,7 +112,7 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
       }
 
       const ext = path.extname(absPath).toLowerCase();
-      if (!SUPPORTED_EXTENSIONS.has(ext)) {
+      if (!(code ? SUPPORTED_EXTENSIONS : MD_EXTENSIONS).has(ext)) {
         res.status(404).send('Not Found');
         return;
       }
@@ -123,7 +124,7 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
 
       try {
         const { html } = renderFile(absPath, speech);
-        const files = scanFiles(resolvedRoot);
+        const files = scanFiles(resolvedRoot, code);
         res.send(renderFilePage(html, relPath, files, { speech }));
       } catch {
         res.status(500).send('Error reading file');
