@@ -27,6 +27,11 @@ function buildSpeechRenderer(): Renderer {
 
 const speechMarked = new Marked({ gfm: true, renderer: buildSpeechRenderer() });
 
+export function renderCodeFile(content: string, lang: string): string {
+  const fenced = '```' + lang + '\n' + content + '\n```';
+  return renderMarkdown(fenced);
+}
+
 export function renderMarkdown(content: string): string {
   const result = base.parse(content);
   if (result instanceof Promise) throw new Error('marked returned Promise unexpectedly');

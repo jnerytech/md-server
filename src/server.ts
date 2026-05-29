@@ -2,8 +2,8 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import fs from 'fs';
-import { scanMarkdownFiles } from './scanner.js';
-import { renderMarkdown, renderMarkdownSpeech } from './renderer.js';
+import { scanFiles, SUPPORTED_EXTENSIONS } from './scanner.js';
+import { renderMarkdown, renderMarkdownSpeech, renderCodeFile } from './renderer.js';
 import { renderFilePage } from './templates.js';
 
 interface ServerOptions {
@@ -13,16 +13,78 @@ interface ServerOptions {
   speech?: boolean;
 }
 
+const EXT_TO_LANG: Record<string, string> = {
+  '.ts': 'typescript', '.tsx': 'typescript',
+  '.js': 'javascript', '.jsx': 'javascript', '.mjs': 'javascript', '.cjs': 'javascript',
+  '.py': 'python',
+  '.cs': 'csharp',
+  '.go': 'go',
+  '.rs': 'rust',
+  '.java': 'java',
+  '.rb': 'ruby',
+  '.php': 'php',
+  '.c': 'c',
+  '.cpp': 'cpp', '.cc': 'cpp', '.h': 'cpp', '.hpp': 'cpp',
+  '.sh': 'bash', '.bash': 'bash',
+  '.dart': 'dart',
+  '.swift': 'swift',
+  '.kt': 'kotlin', '.kts': 'kotlin',
+  '.scala': 'scala',
+  '.yaml': 'yaml', '.yml': 'yaml',
+  '.json': 'json',
+  '.toml': 'toml',
+  '.html': 'html', '.htm': 'html',
+  '.css': 'css',
+  '.scss': 'scss',
+  '.sass': 'sass',
+  '.less': 'less',
+  '.sql': 'sql',
+};
+
+const LANG_DISPLAY: Record<string, string> = {
+  typescript: 'TypeScript', javascript: 'JavaScript', python: 'Python',
+  csharp: 'C#', go: 'Go', rust: 'Rust', java: 'Java', ruby: 'Ruby',
+  php: 'PHP', c: 'C', cpp: 'C++', bash: 'Shell', dart: 'Dart',
+  swift: 'Swift', kotlin: 'Kotlin', scala: 'Scala', yaml: 'YAML',
+  json: 'JSON', toml: 'TOML', html: 'HTML', css: 'CSS', scss: 'SCSS',
+  sass: 'Sass', less: 'Less', sql: 'SQL',
+};
+
+function renderFile(
+  absPath: string,
+  speech: boolean,
+): { html: string; suppressed: boolean } {
+  const ext = path.extname(absPath).toLowerCase();
+  const isMd = ext === '.md';
+  const content = fs.readFileSync(absPath, 'utf-8');
+
+  if (!isMd && speech) {
+    const lang = EXT_TO_LANG[ext] ?? '';
+    const display = lang ? (LANG_DISPLAY[lang] ?? lang) : ext;
+    const filename = path.basename(absPath);
+    return {
+      html: `<p>[ Arquivo ${display}: ${filename} ]</p>`,
+      suppressed: true,
+    };
+  }
+
+  if (isMd) {
+    const render = speech ? renderMarkdownSpeech : renderMarkdown;
+    return { html: render(content), suppressed: false };
+  }
+
+  const lang = EXT_TO_LANG[ext] ?? '';
+  return { html: renderCodeFile(content, lang), suppressed: false };
+}
+
 export function startServer({ root, file, port = 0, speech = false }: ServerOptions): void {
-  const render = speech ? renderMarkdownSpeech : renderMarkdown;
   const app = express();
 
   if (file) {
     const absFile = path.resolve(file);
     app.get('/', (_req, res) => {
       try {
-        const content = fs.readFileSync(absFile, 'utf-8');
-        const html = render(content);
+        const { html } = renderFile(absFile, speech);
         res.send(renderFilePage(html, path.basename(absFile), [], { showBack: false, speech }));
       } catch {
         res.status(500).send('Error reading file');
@@ -32,9 +94,9 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
     const resolvedRoot = path.resolve(root!);
 
     app.get('/', (_req, res) => {
-      const files = scanMarkdownFiles(resolvedRoot);
+      const files = scanFiles(resolvedRoot);
       if (files.length === 0) {
-        res.status(404).send('No markdown files found');
+        res.status(404).send('No supported files found');
         return;
       }
       const readmeIdx = files.findIndex((f) => path.basename(f).toLowerCase() === 'readme.md');
@@ -57,15 +119,20 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
         return;
       }
 
+      const ext = path.extname(absPath).toLowerCase();
+      if (!SUPPORTED_EXTENSIONS.has(ext)) {
+        res.status(404).send('Not Found');
+        return;
+      }
+
       if (!fs.existsSync(absPath)) {
         res.status(404).send('Not Found');
         return;
       }
 
       try {
-        const content = fs.readFileSync(absPath, 'utf-8');
-        const html = render(content);
-        const files = scanMarkdownFiles(resolvedRoot);
+        const { html } = renderFile(absPath, speech);
+        const files = scanFiles(resolvedRoot);
         res.send(renderFilePage(html, relPath, files, { speech }));
       } catch {
         res.status(500).send('Error reading file');

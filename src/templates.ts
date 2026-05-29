@@ -145,7 +145,7 @@ function buildSidebar(files: string[], currentPath: string): string {
     .map(([dir, groupFiles]) => {
       const items = groupFiles
         .map((f) => {
-          const name = path.basename(f, '.md');
+          const name = path.basename(f);
           const href = '/file/' + f.split('/').map(encodeURIComponent).join('/');
           const isActive = f === currentPath;
           return `<a class="sidebar-item${isActive ? ' active' : ''}" href="${href}" title="${escapeHtml(f)}">${escapeHtml(name)}</a>`;
@@ -167,7 +167,7 @@ export function renderFilePage(
   files: string[],
   { showBack = true, speech = false }: { showBack?: boolean; speech?: boolean } = {}
 ): string {
-  const name = path.basename(relPath, '.md');
+  const name = path.basename(relPath);
 
   if (files.length === 0) {
     const topBar = showBack
