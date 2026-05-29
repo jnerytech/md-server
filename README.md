@@ -39,8 +39,7 @@ O npm clona o repositório, instala as dependências e registra o comando `md-se
 
 > **Se já tiver um `npm link` ativo**, remova-o antes para evitar conflito:
 > ```bash
-> cd ~/repos/md-server   # pasta local do projeto
-> npm unlink             # remove o link global
+> npm unlink -g md-server   # remove o link global pelo nome do pacote
 > ```
 > Depois rode o `npm install -g github:...` normalmente.
 
