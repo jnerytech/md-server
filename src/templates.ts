@@ -61,7 +61,7 @@ const CSS_LAYOUT = `
   }
   .sidebar-item {
     display: block;
-    padding: 0.3125rem 1rem;
+    padding: 0.3125rem 1rem 0.3125rem 1.5rem;
     font-size: 0.875rem;
     color: #24292f;
     text-decoration: none;
@@ -226,6 +226,16 @@ export function renderFilePage(
     hljs.highlightAll();
     document.getElementById('toggle-btn').addEventListener('click', function() {
       document.body.classList.toggle('sidebar-collapsed');
+    });
+    var sidebar = document.querySelector('.sidebar');
+    try {
+      var saved = sessionStorage.getItem('sidebarScroll');
+      if (saved !== null) sidebar.scrollTop = parseInt(saved, 10);
+    } catch (e) {}
+    document.querySelectorAll('.sidebar-item').forEach(function(link) {
+      link.addEventListener('click', function() {
+        try { sessionStorage.setItem('sidebarScroll', sidebar.scrollTop); } catch (e) {}
+      });
     });
   </script>
 </body>
