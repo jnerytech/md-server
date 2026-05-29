@@ -7,6 +7,12 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;');
 }
 
+function codeLine(line: string): string {
+  const leading = line.match(/^( *)/)?.[1] ?? '';
+  const rest = line.slice(leading.length);
+  return '&nbsp;'.repeat(leading.length) + escapeHtml(rest);
+}
+
 const base = new Marked({ gfm: true });
 
 function buildSpeechRenderer(): Renderer {
@@ -30,6 +36,13 @@ const speechMarked = new Marked({ gfm: true, renderer: buildSpeechRenderer() });
 export function renderCodeFile(content: string, lang: string): string {
   const fenced = '```' + lang + '\n' + content + '\n```';
   return renderMarkdown(fenced);
+}
+
+export function renderCodeFileSpeech(content: string, _lang: string): string {
+  return content
+    .split('\n')
+    .map(line => `<p style="font-family:monospace;margin:0;line-height:1.5;">${codeLine(line) || '&nbsp;'}</p>`)
+    .join('\n');
 }
 
 export function renderMarkdown(content: string): string {

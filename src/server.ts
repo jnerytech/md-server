@@ -3,7 +3,7 @@ import http from 'http';
 import path from 'path';
 import fs from 'fs';
 import { scanFiles, SUPPORTED_EXTENSIONS } from './scanner.js';
-import { renderMarkdown, renderMarkdownSpeech, renderCodeFile } from './renderer.js';
+import { renderMarkdown, renderMarkdownSpeech, renderCodeFile, renderCodeFileSpeech } from './renderer.js';
 import { renderFilePage } from './templates.js';
 
 interface ServerOptions {
@@ -53,28 +53,19 @@ const LANG_DISPLAY: Record<string, string> = {
 function renderFile(
   absPath: string,
   speech: boolean,
-): { html: string; suppressed: boolean } {
+): { html: string } {
   const ext = path.extname(absPath).toLowerCase();
   const isMd = ext === '.md';
   const content = fs.readFileSync(absPath, 'utf-8');
 
-  if (!isMd && speech) {
-    const lang = EXT_TO_LANG[ext] ?? '';
-    const display = lang ? (LANG_DISPLAY[lang] ?? lang) : ext;
-    const filename = path.basename(absPath);
-    return {
-      html: `<p>[ Arquivo ${display}: ${filename} ]</p>`,
-      suppressed: true,
-    };
-  }
-
   if (isMd) {
     const render = speech ? renderMarkdownSpeech : renderMarkdown;
-    return { html: render(content), suppressed: false };
+    return { html: render(content) };
   }
 
   const lang = EXT_TO_LANG[ext] ?? '';
-  return { html: renderCodeFile(content, lang), suppressed: false };
+  const render = speech ? renderCodeFileSpeech : renderCodeFile;
+  return { html: render(content, lang) };
 }
 
 export function startServer({ root, file, port = 0, speech = false }: ServerOptions): void {
