@@ -1,12 +1,13 @@
 # md-server
 
-CLI em TypeScript que serve arquivos Markdown como HTML no navegador. Aponte para qualquer pasta com arquivos `.md` e acesse um índice navegável em `localhost`.
+CLI em TypeScript que serve arquivos Markdown e código-fonte como HTML no navegador. Aponte para qualquer pasta e acesse um índice navegável em `localhost`.
 
 ## O que faz
 
-- Varre recursivamente uma pasta em busca de arquivos `.md`
-- Exibe um índice no navegador com os arquivos agrupados por subdiretório
-- Renderiza cada `.md` como HTML ao clicar no link (GitHub Flavored Markdown)
+- Varre recursivamente uma pasta em busca de arquivos `.md` e arquivos de código (`.ts`, `.py`, `.cs`, `.go`, `.rs`, `.java` e [mais de 30 extensões](#extensões-suportadas))
+- Respeita `.gitignore` (incluindo os aninhados em subdiretórios)
+- Exibe uma sidebar com os arquivos agrupados por subdiretório
+- Renderiza `.md` como HTML (GitHub Flavored Markdown) e arquivos de código com syntax highlighting
 - Abre o navegador automaticamente ao iniciar
 - Sem build step — roda TypeScript diretamente via `tsx`
 
@@ -44,18 +45,19 @@ Após `npm link`, o comando `md-server` fica disponível em qualquer pasta nos t
 ## Uso
 
 ```bash
-# Serve a pasta atual (todos os *.md recursivamente)
+# Serve a pasta atual (*.md e arquivos de código recursivamente)
 md-server
 
 # Serve uma pasta específica
-md-server ./guidelines
+md-server ./src
 md-server ../docs
 
 # Serve um único arquivo diretamente
-md-server ./guidelines/criar-endpoint-fastendpoints.md
+md-server ./guidelines/criar-endpoint.md
+md-server ./src/scanner.ts
 
 # Porta customizada
-md-server ./guidelines --port 4000
+md-server ./src --port 4000
 
 # Modo leitura (speech-friendly para Speechify e leitores TTS)
 md-server ./guidelines --speech
@@ -69,25 +71,47 @@ md-server --version
 ### Caso de uso principal
 
 ```bash
-# Navegar pelos guidelines do projeto ftc
-cd ~/repos/ws-ia/ftc
+# Navegar pelo código e docs de um projeto
+cd ~/repos/meu-projeto
 md-server
-# → abre http://localhost:3000 com todos os .md do projeto
+# → abre http://localhost com todos os .md e arquivos de código do projeto
 ```
 
 ## Interface
 
-**Índice (`/`):** lista todos os arquivos `.md` encontrados, agrupados por subdiretório, com link para cada um.
+**Sidebar:** lista todos os arquivos encontrados, agrupados por subdiretório, com o nome completo incluindo extensão. Colapsável via botão toggle.
 
-**Página de arquivo (`/file/<path>`):** renderiza o Markdown como HTML com:
-- GitHub Flavored Markdown (tabelas, task lists, strikethrough)
-- Syntax highlighting via [highlight.js](https://highlightjs.org/) (requer conexão com a internet)
-- Link de volta ao índice
+**Página de arquivo (`/file/<path>`):** renderiza conforme o tipo:
+- **`.md`** — GitHub Flavored Markdown (tabelas, task lists, strikethrough)
+- **Código** — bloco de código com syntax highlighting via [highlight.js](https://highlightjs.org/)
 
 **Modo `--speech`:** renderização otimizada para leitores TTS como [Speechify](https://speechify.com/):
-- Blocos de código viram `<p>` (lidos pelo TTS, separados por `<hr>`)
+- Arquivos de código mostram apenas o identificador: `[ Arquivo TypeScript: scanner.ts ]`
+- Blocos de código em `.md` viram `<p>` (lidos pelo TTS, separados por `<hr>`)
 - Tabelas sem zebra e sem destaque no header (lidas sem pular)
 - Blockquotes em `<div>` (não ignorados pelo leitor)
+
+## Extensões suportadas
+
+| Categoria | Extensões |
+|-----------|-----------|
+| TypeScript / JavaScript | `.ts` `.tsx` `.js` `.jsx` `.mjs` `.cjs` |
+| Python | `.py` |
+| C# | `.cs` |
+| Go | `.go` |
+| Rust | `.rs` |
+| Java / Kotlin / Scala | `.java` `.kt` `.kts` `.scala` |
+| Ruby | `.rb` |
+| PHP | `.php` |
+| C / C++ | `.c` `.cpp` `.cc` `.h` `.hpp` |
+| Shell | `.sh` `.bash` |
+| Dart / Swift | `.dart` `.swift` |
+| Config / Data | `.yaml` `.yml` `.json` `.toml` `.ini` `.conf` |
+| Web | `.html` `.htm` `.css` `.scss` `.sass` `.less` |
+| SQL | `.sql` |
+| Markdown | `.md` |
+
+Arquivos `.env`, `.pem`, `.key` e binários são excluídos independentemente do `.gitignore`.
 
 ## Desenvolvimento
 
@@ -105,10 +129,10 @@ md-server/
 │   └── md-server       # shell wrapper executável (entry point do npm link)
 └── src/
     ├── index.ts         # parse de args e validação
-    ├── server.ts        # Express app e rotas
-    ├── scanner.ts       # varredura recursiva de *.md
-    ├── renderer.ts      # marked: markdown → HTML
-    └── templates.ts     # templates HTML com CSS inline
+    ├── server.ts        # Express app, rotas e detecção de tipo de arquivo
+    ├── scanner.ts       # varredura recursiva com whitelist e .gitignore
+    ├── renderer.ts      # markdown → HTML e code → fenced block
+    └── templates.ts     # templates HTML com CSS inline e sidebar
 ```
 
 ## Dependências
@@ -117,5 +141,6 @@ md-server/
 |--------|-----|
 | `express` | servidor HTTP |
 | `marked` | renderização de Markdown (GFM) |
+| `ignore` | filtragem de `.gitignore` aninhados |
 | `open` | abre o navegador automaticamente |
 | `tsx` | executa TypeScript diretamente (sem compilação) |
