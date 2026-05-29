@@ -4,7 +4,7 @@ CLI em TypeScript que serve arquivos Markdown e código-fonte como HTML no naveg
 
 ## O que faz
 
-- Varre recursivamente uma pasta em busca de arquivos `.md` e arquivos de código (`.ts`, `.py`, `.cs`, `.go`, `.rs`, `.java` e [mais de 30 extensões](#extensões-suportadas))
+- Varre recursivamente uma pasta em busca de arquivos `.md` (padrão) e arquivos de código (`.ts`, `.py`, `.cs`, `.go`, `.rs`, `.java` e [mais de 30 extensões](#extensões-suportadas) — com flag `--code`)
 - Respeita `.gitignore` (incluindo os aninhados em subdiretórios)
 - Exibe uma sidebar com os arquivos agrupados por subdiretório
 - Renderiza `.md` como HTML (GitHub Flavored Markdown) e arquivos de código com syntax highlighting
@@ -59,12 +59,15 @@ Após `npm link`, o comando `md-server` fica disponível em qualquer pasta nos t
 ## Uso
 
 ```bash
-# Serve a pasta atual (*.md e arquivos de código recursivamente)
+# Serve a pasta atual (só *.md por padrão)
 md-server
 
 # Serve uma pasta específica
 md-server ./src
 md-server ../docs
+
+# Inclui arquivos de código além dos .md na sidebar e navegação
+md-server ./src --code
 
 # Serve um único arquivo diretamente
 md-server ./guidelines/criar-endpoint.md
@@ -77,6 +80,9 @@ md-server ./src --port 4000
 md-server ./guidelines --speech
 md-server "arquivo.md" --speech
 
+# Combinar flags
+md-server ./src --code --speech
+
 # Informações
 md-server --help
 md-server --version
@@ -85,10 +91,14 @@ md-server --version
 ### Caso de uso principal
 
 ```bash
-# Navegar pelo código e docs de um projeto
+# Navegar pelos docs de um projeto
 cd ~/repos/meu-projeto
 md-server
-# → abre http://localhost com todos os .md e arquivos de código do projeto
+# → abre http://localhost com todos os .md do projeto
+
+# Navegar pelo código e docs juntos
+md-server --code
+# → inclui arquivos de código na sidebar além dos .md
 ```
 
 ## Interface
@@ -100,10 +110,12 @@ md-server
 - **Código** — bloco de código com syntax highlighting via [highlight.js](https://highlightjs.org/)
 
 **Modo `--speech`:** renderização otimizada para leitores TTS como [Speechify](https://speechify.com/):
-- Arquivos de código mostram apenas o identificador: `[ Arquivo TypeScript: scanner.ts ]`
+- Arquivos de código renderizam cada linha como `<p>` com fonte monospace (lidos linha a linha pelo TTS)
 - Blocos de código em `.md` viram `<p>` (lidos pelo TTS, separados por `<hr>`)
 - Tabelas sem zebra e sem destaque no header (lidas sem pular)
 - Blockquotes em `<div>` (não ignorados pelo leitor)
+
+**Flag `--code`:** inclui arquivos de código na sidebar e navegação em modo diretório. Sem a flag, apenas `.md` aparecem. Em modo single-file (`md-server arquivo.ts`), código sempre é renderizado independente da flag.
 
 ## Extensões suportadas
 
