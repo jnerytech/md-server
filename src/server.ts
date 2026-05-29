@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { scanMarkdownFiles } from './scanner.js';
 import { renderMarkdown, renderMarkdownSpeech } from './renderer.js';
-import { renderIndexPage, renderFilePage } from './templates.js';
+import { renderFilePage } from './templates.js';
 
 interface ServerOptions {
   root?: string;
@@ -23,7 +23,7 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
       try {
         const content = fs.readFileSync(absFile, 'utf-8');
         const html = render(content);
-        res.send(renderFilePage(html, path.basename(absFile), { showBack: false, speech }));
+        res.send(renderFilePage(html, path.basename(absFile), [], { showBack: false, speech }));
       } catch {
         res.status(500).send('Error reading file');
       }
@@ -33,7 +33,14 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
 
     app.get('/', (_req, res) => {
       const files = scanMarkdownFiles(resolvedRoot);
-      res.send(renderIndexPage(files, resolvedRoot));
+      if (files.length === 0) {
+        res.status(404).send('No markdown files found');
+        return;
+      }
+      const readmeIdx = files.findIndex((f) => path.basename(f).toLowerCase() === 'readme.md');
+      const target = readmeIdx >= 0 ? files[readmeIdx] : files[0];
+      const href = '/file/' + target.split('/').map(encodeURIComponent).join('/');
+      res.redirect(302, href);
     });
 
     app.get('/file/*', (req, res) => {
@@ -58,7 +65,8 @@ export function startServer({ root, file, port = 0, speech = false }: ServerOpti
       try {
         const content = fs.readFileSync(absPath, 'utf-8');
         const html = render(content);
-        res.send(renderFilePage(html, relPath, { speech }));
+        const files = scanMarkdownFiles(resolvedRoot);
+        res.send(renderFilePage(html, relPath, files, { speech }));
       } catch {
         res.status(500).send('Error reading file');
       }
