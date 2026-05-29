@@ -17,6 +17,16 @@ Enter explore mode. Think deeply. Visualize freely. Follow the conversation wher
 
 ---
 
+## Use AskUserQuestion for clarifications - MANDATORY
+
+Before asking anything in chat, use the `AskUserQuestion` tool (Claude Code built-in tool).
+
+- NEVER ask clarifying questions as plain text in the conversation
+- ALWAYS use the Claude Code `AskUserQuestion` tool when you need input from the user
+- This applies to ALL situations: requirements, decisions, ambiguity, confirmations
+
+---
+
 ## The Stance
 
 - **Curious, not prescriptive** - Ask questions that emerge naturally, don't follow a script
