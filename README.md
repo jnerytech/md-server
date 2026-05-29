@@ -29,10 +29,25 @@ nvm install 22
 nvm alias default 22
 ```
 
-### Instalar dependências e registrar o comando globalmente
+### Opção A — Instalar direto do GitHub (recomendado)
 
 ```bash
-cd ~/repos/ws-ia/md-server
+npm install -g github:jnerytech/md-server
+```
+
+O npm clona o repositório, instala as dependências e registra o comando `md-server` globalmente.
+
+> **Se já tiver um `npm link` ativo**, remova-o antes para evitar conflito:
+> ```bash
+> cd ~/repos/md-server   # pasta local do projeto
+> npm unlink             # remove o link global
+> ```
+> Depois rode o `npm install -g github:...` normalmente.
+
+### Opção B — Instalar localmente com `npm link`
+
+```bash
+cd ~/repos/md-server
 nvm use           # usa a versão do .nvmrc (Node 22)
 npm install
 npm link          # registra "md-server" como comando global
